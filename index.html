@@ -1272,8 +1272,7 @@
             try {
                 const url = `${API_BASE_URL}/${cnpj}`; // Corrigido para o endpoint oficial da CNPJá (Receita Federal)
         const headers = {
-            'Authorization': `Bearer ${API_KEY}`,
-            'Content-Type': 'application/json'
+           'Authorization': API_KEY, // Removido 'Bearer ' conforme documentação da CNPJá            'Content-Type': 'application/json'
         };
 
         const response = await fetch(url, { headers: headers,
