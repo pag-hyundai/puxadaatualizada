@@ -1179,7 +1179,7 @@
         let isProcessing = false;
 
         // Configurações da API CNPJjá
-        const API_BASE_URL = 'https://api.cnpja.com/office';
+        const API_BASE_URL = 'https://api.cnpja.com/office'; // Mantido, mas o endpoint correto é 'https://api.cnpja.com/office/{cnpj}'
         const API_KEY = 'e3eba6c7-ceee-42b8-99b9-2565102a6bc3-44d3856b-603a-4d0c-9a28-a57dbfd43724'; // Chave fornecida pelo usuário
 
         // ===== UTILITÁRIOS =====
@@ -1270,7 +1270,7 @@
             }
 
             try {
-                const url = `${API_BASE_URL}/v1/companies/${cnpj}`;
+                const url = `${API_BASE_URL}/${cnpj}`; // Corrigido para o endpoint oficial da CNPJá (Receita Federal)
         const headers = {
             'Authorization': `Bearer ${API_KEY}`,
             'Content-Type': 'application/json'
@@ -1323,17 +1323,17 @@ if (!response.ok || data.error) {
 
 const infoItems = [
 				                { label: 'CNPJ', value: data.cnpj },
-				                { label: 'Situação Cadastral', value: data.situacao || '-' },
-				                { label: 'Data da Situação', value: data.data_situacao || '-' },
-				                { label: 'Razão Social', value: data.razao_social },
-				                { label: 'Nome Fantasia', value: data.nome_fantasia || '-' },
-				                { label: 'Natureza Jurídica', value: data.natureza_juridica?.descricao || '-' },
-				                { label: 'Porte', value: data.porte_empresa || '-' },
-				                { label: 'Data de Abertura', value: data.data_abertura || '-' },
-				                { label: 'Atividade Principal', value: data.cnae_principal?.descricao || '-' },
-				                { label: 'Endereço', value: `${data.logradouro || ''}, ${data.numero || ''} ${data.complemento || ''} - ${data.bairro || ''}, ${data.municipio || ''}/${data.uf || ''} - CEP: ${data.cep || ''}`.trim() },
-				                { label: 'Telefone', value: `${data.ddd_telefone_1 || ''} ${data.telefone_1 || ''}`.trim() || '-' },
-				                { label: 'E-mail', value: data.email || '-' }
+				                { label: 'Situação Cadastral', value: data.status?.description || '-' },
+				                { label: 'Data da Situação', value: data.status?.date || '-' },
+				                { label: 'Razão Social', value: data.company?.name || data.name || '-' },
+				                { label: 'Nome Fantasia', value: data.alias || '-' },
+				                { label: 'Natureza Jurídica', value: data.company?.legalNature?.description || data.legalNature?.description || '-' },
+				                { label: 'Porte', value: data.company?.size || data.size || '-' },
+				                { label: 'Data de Abertura', value: data.founded || '-' },
+				                { label: 'Atividade Principal', value: data.mainActivity?.description || data.company?.mainActivity?.description || '-' },
+				                { label: 'Endereço', value: `${data.address?.street || ''}, ${data.address?.number || ''} ${data.address?.complement || ''} - ${data.address?.district || ''}, ${data.address?.city || ''}/${data.address?.state || ''} - CEP: ${data.address?.zip || ''}`.trim() },
+				                { label: 'Telefone', value: data.phones?.[0]?.number || '-' },
+				                { label: 'E-mail', value: data.emails?.[0]?.address || '-' }
 				            ];
 
             const htmlContent = infoItems.map(item => `
