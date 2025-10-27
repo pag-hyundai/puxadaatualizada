@@ -1178,6 +1178,10 @@
         let cnpjData = null;
         let isProcessing = false;
 
+        // Configurações da API CNPJjá
+        const API_BASE_URL = 'https://api.cnpja.com/office';
+        const API_KEY = 'e3eba6c7-ceee-42b8-99b9-2565102a6bc3-44d3856b-603a-4d0c-9a28-a57dbfd43724'; // Chave fornecida pelo usuário
+
         // ===== UTILITÁRIOS =====
         function debounce(func, delay) {
             let timeoutId;
@@ -1266,7 +1270,13 @@
             }
 
             try {
-                const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`, {
+                const url = `${API_BASE_URL}/company/${cnpj}`;
+        const headers = {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json'
+        };
+
+        const response = await fetch(url, { headers: headers,
                     signal: AbortSignal.timeout(5000)
                 });
 
@@ -1274,11 +1284,12 @@
 
                 await new Promise(resolve => setTimeout(resolve, 400));
 
-                if (!response.ok || data.message === 'CNPJ inválido' || data.type === 'service_error') {
-                    throw new Error(data.message || 'CNPJ não encontrado ou inválido');
-                }
+if (!response.ok || data.error) {
+            const errorMessage = data.message || data.error || 'CNPJ não encontrado ou inválido. Verifique a chave de API.';
+            throw new Error(errorMessage);
+        }
 
-                // A BrasilAPI retorna os dados diretamente no corpo da resposta
+                // A CNPJjá retorna os dados diretamente no corpo da resposta
                 cnpjData = data;
                 displayCNPJInfo(data);
                 cnpjInput.classList.add('success');
@@ -1297,7 +1308,7 @@
                 
             } catch (error) {
                 console.error('Erro ao buscar CNPJ:', error);
-                showCNPJError('Erro ao buscar CNPJ. Verifique se o CNPJ está correto ou tente novamente mais tarde.');
+                showCNPJError(error.message || 'Erro ao buscar CNPJ. Verifique se o CNPJ está correto ou tente novamente mais tarde.');
             } finally {
                 if (loadingIndicator) {
                     loadingIndicator.classList.remove('show');
@@ -1312,14 +1323,14 @@
 
 const infoItems = [
 				                { label: 'CNPJ', value: data.cnpj },
-				                { label: 'Situação Cadastral', value: data.descricao_situacao_cadastral || '-' },
-				                { label: 'Data da Situação', value: data.data_situacao_cadastral || '-' },
+				                { label: 'Situação Cadastral', value: data.situacao || '-' },
+				                { label: 'Data da Situação', value: data.data_situacao || '-' },
 				                { label: 'Razão Social', value: data.razao_social },
 				                { label: 'Nome Fantasia', value: data.nome_fantasia || '-' },
-				                { label: 'Natureza Jurídica', value: data.descricao_natureza_juridica || '-' },
-				                { label: 'Porte', value: data.porte || '-' },
-				                { label: 'Data de Abertura', value: data.data_inicio_atividade || '-' },
-				                { label: 'Atividade Principal', value: data.cnae_fiscal_principal?.descricao || '-' },
+				                { label: 'Natureza Jurídica', value: data.natureza_juridica?.descricao || '-' },
+				                { label: 'Porte', value: data.porte_empresa || '-' },
+				                { label: 'Data de Abertura', value: data.data_abertura || '-' },
+				                { label: 'Atividade Principal', value: data.cnae_principal?.descricao || '-' },
 				                { label: 'Endereço', value: `${data.logradouro || ''}, ${data.numero || ''} ${data.complemento || ''} - ${data.bairro || ''}, ${data.municipio || ''}/${data.uf || ''} - CEP: ${data.cep || ''}`.trim() },
 				                { label: 'Telefone', value: `${data.ddd_telefone_1 || ''} ${data.telefone_1 || ''}`.trim() || '-' },
 				                { label: 'E-mail', value: data.email || '-' }
